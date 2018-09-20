@@ -1,5 +1,4 @@
 const Koa = require('koa')
-const path = require('path')
 
 const wechat = require('./wechat/p')
 const config = require('./config')

@@ -34,7 +34,6 @@ module.exports = function (opts, handler) {
       let message = util.formatMessage(content.xml)
 
       this.weixin = message
-      console.log(message);
 
       yield handler.call(this, next)
 
