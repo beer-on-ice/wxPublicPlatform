@@ -1,6 +1,7 @@
 const xml2js = require('xml2js')
 const tpl = require('./tpl')
 
+// node 中 json 与 xml 相互转化
 exports.parseXMLAsync = xml => {
   return new Promise((resolve, reject) => {
     xml2js.parseString(xml, {
@@ -12,7 +13,8 @@ exports.parseXMLAsync = xml => {
   })
 }
 
-function formatMessage(result) {
+// 把交互信息格式化
+exports.formatMessage = result => {
   let message = {}
   if (typeof result === 'object') {
     let keys = Object.keys(result)
@@ -39,8 +41,8 @@ function formatMessage(result) {
   }
   return message
 }
-exports.formatMessage = formatMessage
 
+// 生成回复模板
 exports.tpl = function (content, message) {
   let info = {}
   let type = 'text'
@@ -48,7 +50,8 @@ exports.tpl = function (content, message) {
   let toUserName = message.ToUserName
 
   if (Array.isArray(content)) type = 'news'
-  type = content.type || type
+
+  info.msgType = content.type || type
   info.content = content
   info.createTime = new Date().getTime()
   info.toUserName = fromUserName

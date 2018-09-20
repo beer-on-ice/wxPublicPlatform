@@ -55,6 +55,7 @@ module.exports = class Wechat {
     if (now < expires_in) return true
     else return false
   }
+  // 回复
   reply() {
     let content = this.body
     let message = this.weixin

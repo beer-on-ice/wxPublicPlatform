@@ -2,11 +2,9 @@ const sha1 = require('sha1')
 const Wechat = require('./wechat')
 const util = require('./util')
 const getRawBody = require('raw-body')
-
-module.exports = function (opts) {
+module.exports = function (opts, handler) {
   let wechat = new Wechat(opts)
   return function* (next) {
-    let that = this
     let token = opts.token
     let signature = this.query.signature
     let nonce = this.query.nonce
@@ -36,6 +34,7 @@ module.exports = function (opts) {
       let message = util.formatMessage(content.xml)
 
       this.weixin = message
+      console.log(message);
 
       yield handler.call(this, next)
 
