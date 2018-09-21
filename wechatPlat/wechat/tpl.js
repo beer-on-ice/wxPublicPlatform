@@ -1,3 +1,4 @@
+// 生成对应回复xml解构
 const ejs = require('ejs')
 const heredoc = require('heredoc')
 // 各消息类型需要的XML数据包结构
