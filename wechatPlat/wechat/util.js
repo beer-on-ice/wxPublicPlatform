@@ -14,7 +14,7 @@ exports.parseXMLAsync = xml => {
 }
 
 // 把交互信息格式化
-exports.formatMessage = result => {
+function formatMessage(result) {
   let message = {}
   if (typeof result === 'object') {
     let keys = Object.keys(result)
@@ -24,6 +24,7 @@ exports.formatMessage = result => {
       if (!(item instanceof Array) || item.length === 0) {
         continue
       }
+
       if (item.length === 1) {
         let val = item[0]
         if (typeof val === 'object') {
@@ -46,6 +47,7 @@ exports.formatMessage = result => {
 exports.tpl = function (content, message) {
   let info = {}
   let type = 'text'
+
   let fromUserName = message.FromUserName
   let toUserName = message.ToUserName
 
@@ -59,3 +61,5 @@ exports.tpl = function (content, message) {
 
   return tpl.compiled(info)
 }
+
+exports.formatMessage = formatMessage

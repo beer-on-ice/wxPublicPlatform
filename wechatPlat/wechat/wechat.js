@@ -34,8 +34,21 @@ const api = {
   user: {
     remark: prefix + 'user/info/updateremark?',
     fetch: prefix + 'user/info?',
-    batchFetch: prefix+ 'user/info/batchget?',
+    batchFetch: prefix + 'user/info/batchget?',
     list: prefix + 'user/get?'
+  },
+  mass: {
+    group: prefix + 'message/mass/sendall?',
+    openId: prefix + 'message/mass/send?',
+    del: prefix + 'message/mass/delete?',
+    preview: prefix + 'message/mass/preview?',
+    check: prefix + 'message/mass/get?'
+  },
+  menu: {
+    create: prefix + 'menu/create?',
+    get: prefix + 'menu/get?',
+    del: prefix + 'menu/delete?',
+    current: prefix + 'get_current_selfmenu_info?'
   }
 }
 
@@ -104,7 +117,6 @@ module.exports = class Wechat {
   reply() {
     let content = this.body
     let message = this.weixin
-
     let xml = util.tpl(content, message)
     this.status = 200
     this.type = 'application/xml'
@@ -384,7 +396,7 @@ module.exports = class Wechat {
       })
     })
   }
-  updateGroup(id,name) {
+  updateGroup(id, name) {
     let _this = this
     let updateUrl = api.group.update
 
@@ -393,8 +405,8 @@ module.exports = class Wechat {
         let url = `${updateUrl}access_token=${data.access_token}`
         let form = {
           group: {
-            id:id,
-            name:name
+            id: id,
+            name: name
           }
         }
         let params = {
@@ -418,22 +430,21 @@ module.exports = class Wechat {
     let _this = this
     let moveUrl = api.group.move
     let batchmoveUrl = api.group.batchmove
-    
+
     return new Promise((resolve, reject) => {
       _this.fetchAccessToken().then(data => {
         let url;
         let form = {
           to_groupid: to
         }
-        if(_.isArray(openIds)) {
+        if (_.isArray(openIds)) {
           url = `${batchmoveUrl}access_token=${data.access_token}`
           form.openid_list = openIds
-        }
-        else {
+        } else {
           url = `${moveUrl}access_token=${data.access_token}`
           form.openid = openIds
         }
-        
+
         let params = {
           method: 'POST',
           url: url,
@@ -481,7 +492,7 @@ module.exports = class Wechat {
     })
   }
   ////// 用户操作 ///////
-  remarkUser(openId,remark) {
+  remarkUser(openId, remark) {
     let _this = this
     let remarkUrl = api.user.remark
 
@@ -547,11 +558,10 @@ module.exports = class Wechat {
     return new Promise((resolve, reject) => {
       _this.fetchAccessToken().then(data => {
         let url = `${listUrl}access_token=${data.access_token}`
-        if(openId) {
+        if (openId) {
           url += `&next_openid=${openId}`
         }
-        console.log(url);
-        
+
         let params = {
           url: url,
           json: true
@@ -561,6 +571,253 @@ module.exports = class Wechat {
           let _data = res.body
           if (_data) resolve(_data)
           else throw new Error('ListUser Material failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  ////////// 群发 ///////////
+  sendByGroup(type, message, groupId) {
+    let _this = this
+    let sendUrl = api.mass.group
+
+    let msg = {
+      filter: {},
+      msgtype: type
+    }
+
+    if (!groupId) {
+      msg.filter.is_to_all = true
+    } else {
+      msg.filter = {
+        is_to_all: false,
+        tag_id: groupId
+      }
+    }
+
+    msg[type] = message
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${sendUrl}access_token=${data.access_token}`
+        let params = {
+          method: "POST",
+          url: url,
+          json: true,
+          body: msg
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Send To Group failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  sendByOpenIds(type, message, openIds) {
+    let _this = this
+    let sendUrl = api.mass.openId
+
+    let msg = {
+      msgtype: type,
+      touser: openIds
+    }
+
+    msg[type] = message
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${sendUrl}access_token=${data.access_token}`
+        let params = {
+          method: "POST",
+          url: url,
+          json: true,
+          body: msg
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Send To OpenIds failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  deleteMass(msgId, articleId) {
+    let _this = this
+    let delUrl = api.mass.del
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${delUrl}access_token=${data.access_token}`
+        let form = {
+          msg_id: msgId
+        }
+        if (articleId) form.article_idx = articleId
+        let params = {
+          method: "POST",
+          url: url,
+          json: true,
+          body: form
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Delete failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  previewMass(type, message, openId) {
+    let _this = this
+    let previewUrl = api.mass.preview
+
+    let msg = {
+      msgtype: type,
+      touser: openId
+    }
+    msg[type] = message
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${previewUrl}access_token=${data.access_token}`
+        let params = {
+          method: "POST",
+          url: url,
+          json: true,
+          body: msg
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Preview failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  checkMass(msgId) {
+    let _this = this
+    let checkUrl = api.mass.check
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${checkUrl}access_token=${data.access_token}`
+        let params = {
+          method: "POST",
+          url: url,
+          json: true,
+          body: {
+            msg_id: msgId
+          }
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Check failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  /////// 菜单 ///////
+  createMenu(menu) {
+    let _this = this
+    let createUrl = api.menu.create
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${createUrl}access_token=${data.access_token}`
+        let params = {
+          method: "POST",
+          url: url,
+          json: true,
+          body: menu
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Create Menu failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  getMenu() {
+    let _this = this
+    let getUrl = api.menu.get
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${getUrl}access_token=${data.access_token}`
+        let params = {
+          url: url,
+          json: true
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Get Menu failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  delMenu() {
+    let _this = this
+    let deleteUrl = api.menu.del
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${deleteUrl}access_token=${data.access_token}`
+        let params = {
+          url: url,
+          json: true
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Delete Menu failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  currentMenu() {
+    let _this = this
+    let currentUrl = api.menu.current
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${currentUrl}access_token=${data.access_token}`
+        let params = {
+          url: url,
+          json: true
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Get Current Menu failed')
         }).catch(err => {
           reject(err)
         })

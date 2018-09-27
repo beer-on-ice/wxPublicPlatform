@@ -1,9 +1,17 @@
 // 回复策略
-const config = require('./config')
-const Wechat = require('./wechat/wechat')
-
+const config = require('../config')
+const Wechat = require('../wechat/wechat')
+const menu = require('./menu')
 const wechatApi = new Wechat(config.wechat)
+const path = require('path')
 
+setTimeout(() => {
+  wechatApi.delMenu().then(function () {
+    return wechatApi.createMenu(menu)
+  }).then(msg => {
+    console.log(msg);
+  })
+}, 100);
 exports.reply = function* (next) {
   let message = this.weixin
 
@@ -24,6 +32,37 @@ exports.reply = function* (next) {
       console.log(`关注后扫二维码 ${message.EventKey} ${message.Ticket}`);
       this.body = "看到你扫描了"
     } else if (message.Event === 'VIEW') {
+      this.body = `你点击了菜单中的链接: ${message.EventKey}`
+    } else if (message.Event === 'scancode_push') {
+      console.log(message.ScanCodeInfo.ScanType);
+      console.log(message.ScanCodeInfo.ScanResult);
+      this.body = `你点击了菜单中的链接: ${message.EventKey}`
+    } else if (message.Event === 'scancode_waitmsg') {
+      console.log(message.ScanCodeInfo.ScanType);
+      console.log(message.ScanCodeInfo.ScanResult);
+      this.body = `你点击了菜单中的链接: ${message.EventKey}`
+    } else if (message.Event === 'pic_sysphoto') {
+      console.log(message.SendPicsInfo.PicList);
+      console.log(message.SendPicsInfo.Count);
+      this.body = `你点击了菜单中的链接: ${message.EventKey}`
+    } else if (message.Event === 'pic_photo_or_album') {
+      console.log(message.SendPicsInfo.PicList);
+      console.log(message.SendPicsInfo.Count);
+      this.body = `你点击了菜单中的链接: ${message.EventKey}`
+    } else if (message.Event === 'pic_weixin') {
+      console.log(message.SendPicsInfo.PicList);
+      console.log(message.SendPicsInfo.Count);
+      this.body = `你点击了菜单中的链接: ${message.EventKey}`
+    } else if (message.Event === 'location_select') {
+      console.log(message.Location_X);
+      console.log(message.Location_Y);
+      console.log(message.Scale);
+      console.log(message.Label);
+      console.log(message.Poiname);
+      this.body = `你点击了菜单中的链接: ${message.EventKey}`
+    } else if (message.Event === 'media_id') {
+      this.body = `你点击了菜单中的链接: ${message.EventKey}`
+    } else if (message.Event === 'view_limited') {
       this.body = `你点击了菜单中的链接: ${message.EventKey}`
     }
   } else if (message.MsgType === 'text') {
@@ -46,7 +85,7 @@ exports.reply = function* (next) {
         }
       ]
     } else if (content === '3') {
-      let data = yield wechatApi.uploadMaterial('image', __dirname + '/testFile/test.jpg')
+      let data = yield wechatApi.uploadMaterial('image', path.resolve(__dirname, '../testFile/test.jpg'))
       reply = {
         type: 'music',
         title: '回复音乐内容',
@@ -57,7 +96,7 @@ exports.reply = function* (next) {
     }
     // 临时素材 
     else if (content === '4') {
-      let data = yield wechatApi.uploadMaterial('video', __dirname + '/testFile/test.mp4')
+      let data = yield wechatApi.uploadMaterial('video', path.resolve(__dirname, '../testFile/test.mp4'))
       reply = {
         type: 'video',
         title: '回复视频内容',
@@ -67,7 +106,7 @@ exports.reply = function* (next) {
     }
     // 临时素材
     else if (content === '5') {
-      let data = yield wechatApi.uploadMaterial('image', __dirname + '/testFile/test.jpg')
+      let data = yield wechatApi.uploadMaterial('image', path.resolve(__dirname, '../testFile/test.jpg'))
       reply = {
         type: 'image',
         mediaId: data.media_id
@@ -75,7 +114,7 @@ exports.reply = function* (next) {
     }
     // 永久素材 
     else if (content === '6') {
-      let data = yield wechatApi.uploadMaterial('video', __dirname + '/testFile/test.mp4', {
+      let data = yield wechatApi.uploadMaterial('video', path.resolve(__dirname, '../testFile/test.mp4'), {
         type: 'video',
         description: '{"title":"funny,fuck","introduction":"Never think it so easy"}'
       })
@@ -88,7 +127,7 @@ exports.reply = function* (next) {
     }
     // 永久素材
     else if (content === '7') {
-      let data = yield wechatApi.uploadMaterial('image', __dirname + '/testFile/test.jpg', {
+      let data = yield wechatApi.uploadMaterial('image', path.resolve(__dirname, '../testFile/2.jpg'), {
         type: 'image'
       })
       reply = {
@@ -98,9 +137,10 @@ exports.reply = function* (next) {
     }
     // 永久图文素材
     else if (content === '8') {
-      let picData = yield wechatApi.uploadMaterial('image', __dirname + '/testFile/test.jpg', {
+      let picData = yield wechatApi.uploadMaterial('image', path.resolve(__dirname, '../testFile/2.jpg'), {
         type: 'image'
       }, {})
+
       let media = {
         articles: [{
           title: 'tututu',
@@ -129,6 +169,8 @@ exports.reply = function* (next) {
         }]
       }
       data = yield wechatApi.uploadMaterial('news', media, {})
+      console.log(data.media_id);
+
       data = yield wechatApi.fetchMaterial(data.media_id, 'news', {})
 
       let items = data.news_item
@@ -141,6 +183,7 @@ exports.reply = function* (next) {
           url: el.url
         })
       });
+
       reply = news
     } else if (content === '9') {
       let counts = yield wechatApi.countMaterial()
@@ -168,8 +211,9 @@ exports.reply = function* (next) {
         })
       ]
       console.log(JSON.stringify(results));
+      reply = '1'
     } else if (content === '10') {
-      let group = yield wechatApi.createGroup('我是新er分组')
+      // let group = yield wechatApi.createGroup('我是新er分组')
       let groups = yield wechatApi.fetchGroups()
       console.log('添加了 分组 后的分组列表： ' + JSON.stringify(groups))
 
@@ -180,32 +224,53 @@ exports.reply = function* (next) {
       let groups2 = yield wechatApi.fetchGroups()
       console.log('移动后的分组列表： ' + JSON.stringify(groups2))
 
-      let groupsMove = yield wechatApi.moveGroup([message.FromUserName], 103)
+      let groupsMove = yield wechatApi.moveGroup([message.FromUserName], 0)
       let groups3 = yield wechatApi.fetchGroups()
       console.log('批量移动后的分组列表： ' + JSON.stringify(groups3))
 
-      let groupupdate = yield wechatApi.updateGroup(105, '改名啦改名啦')
+      let groupupdate = yield wechatApi.updateGroup(103, '改名啦改名啦2')
       let groups4 = yield wechatApi.fetchGroups()
       console.log('更新后的分组列表： ' + JSON.stringify(groups4))
 
-      let groupdelete = yield wechatApi.deleteGroup(104)
+      let groupdelete = yield wechatApi.deleteGroup(107)
       let groups5 = yield wechatApi.fetchGroups()
       console.log('删除后的分组列表： ' + JSON.stringify(groups5))
       reply = 'Group done'
     } else if (content === '11') {
       let user = yield wechatApi.fetchUsers(message.FromUserName, 'en')
-      console.log(user);
       let openIds = [{
         openid: message.FromUserName,
         lang: 'en'
       }]
       let users = yield wechatApi.fetchUsers(openIds)
-      console.log(users);
       reply = JSON.stringify(user)
     } else if (content === '12') {
       let userlist = yield wechatApi.listUsers()
       console.log(userlist);
+
       reply = userlist.total
+    } else if (content === '13') {
+      let mpnews = {
+        "media_id": "Bp7ugLVGgHpaa6iMdqe_mKus1kY3b4ot4Q7oAQeYviE"
+      }
+      let text = {
+        "content": "Hello, Wechat"
+      }
+      // let msgData = yield wechatApi.sendByGroup("mpnews", mpnews, 0)
+      let msgData = yield wechatApi.sendByGroup("text", text, 0)
+      reply = 'Yeah,Group Send!'
+    } else if (content === '14') {
+      let mpnews = {
+        "media_id": "Bp7ugLVGgHpaa6iMdqe_mKus1kY3b4ot4Q7oAQeYviE"
+      }
+      // let text = {
+      //   "content": "Hello, Wechat"
+      // }
+      let msgData = yield wechatApi.previewMass("mpnews", mpnews, 'ojBKE0jXxAnQyfgRctwpAwDYz_qk')
+      reply = 'Yeah,Preview'
+    } else if (content === '15') {
+      let msgData = yield wechatApi.previewMass('')
+      reply = 'Yeah,Success'
     }
 
     this.body = reply
