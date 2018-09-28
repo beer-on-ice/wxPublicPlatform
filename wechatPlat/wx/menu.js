@@ -41,11 +41,11 @@ module.exports = {
           "type": "location_select",
           "key": "rselfmenu_2_0"
         },
-        // {
-        //   "type": "media_id",
-        //   "name": "图片",
-        //   "media_id": "alNVG25ein1JpsR2yLk9hcsUOf0-PnnQFxwwEoAiJlb2sdeuuJn0dXWEoFz6gtB0"
-        // }
+        {
+          "type": "media_id",
+          "name": "下发图片",
+          "media_id": "Bp7ugLVGgHpaa6iMdqe_mHTeHpzxH_SbOWOiwcl5nS8"
+        }
         // , {
         //   "type": "view_limited",
         //   "name": "图文消息",

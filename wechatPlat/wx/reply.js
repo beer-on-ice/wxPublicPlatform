@@ -271,6 +271,51 @@ exports.reply = function* (next) {
     } else if (content === '15') {
       let msgData = yield wechatApi.previewMass('')
       reply = 'Yeah,Success'
+    } else if (content === '16') {
+      let tmpQr = {
+        expire_seconds: 40000,
+        action_name: 'QR_SCENE',
+        action_info: {
+          scene: {
+            scene_id: 123
+          }
+        }
+      }
+      let permQr = {
+        action_name: 'QR_LIMIT_SCENE',
+        action_info: {
+          scene: {
+            scene_id: 123
+          }
+        }
+      }
+      let permStrQr = {
+        action_name: 'QR_LIMIT_STR_SCENE',
+        action_info: {
+          scene: {
+            scene_str: "genius"
+          }
+        }
+      }
+      let qr1 = yield wechatApi.createQrcode(tmpQr)
+      let qr2 = yield wechatApi.createQrcode(permQr)
+      let qr3 = yield wechatApi.createQrcode(permStrQr)
+      reply = 'Qrcode Created'
+    } else if (content === '17') {
+      let longurl = 'http://ofo91.info/'
+      let shortData = yield wechatApi.createShorturl(null, longurl)
+
+      reply = shortData.short_url
+    } else if (content === '18') {
+      let semanticData = {
+        query: '复仇者联盟',
+        city: '苏州',
+        category: 'movie',
+        uid: message.FromUserName
+      }
+      let _semanticData = yield wechatApi.semantic(semanticData)
+
+      reply = JSON.stringify(_semanticData)
     }
 
     this.body = reply

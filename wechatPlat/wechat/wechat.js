@@ -6,7 +6,10 @@ const request = Promise.promisify(require('request'))
 const fs = require('fs')
 const util = require('./util')
 const prefix = 'https://api.weixin.qq.com/cgi-bin/'
+const mpPrefix = 'https://mp.weixin.qq.com/cgi-bin/'
+const semanticUrl = 'https://api.weixin.qq.com/semantic/semproxy/search?'
 const api = {
+  semanticUrl: semanticUrl,
   access_token: prefix + 'token?grant_type=client_credential',
   temporary: {
     upload: prefix + 'media/upload?',
@@ -49,6 +52,13 @@ const api = {
     get: prefix + 'menu/get?',
     del: prefix + 'menu/delete?',
     current: prefix + 'get_current_selfmenu_info?'
+  },
+  qrcode: {
+    create: prefix + 'qrcode/create?',
+    show: mpPrefix + 'showqrcode'
+  },
+  shorturl: {
+    create: prefix + 'shorturl?'
   }
 }
 
@@ -818,6 +828,89 @@ module.exports = class Wechat {
           let _data = res.body
           if (_data) resolve(_data)
           else throw new Error('Get Current Menu failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  ////////////// 二维码 ////////////////
+  createQrcode(qr) {
+    let _this = this
+    let createUrl = api.qrcode.create
+
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${createUrl}access_token=${data.access_token}`
+        let params = {
+          method: 'POST',
+          url: url,
+          json: true,
+          body: qr
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Create Qrcode failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  showQrcode(ticket) {
+    let _this = this
+    let showUrl = api.qrcode.show
+
+    return `${showUrl}ticket=${encodeURI(ticket)}`
+  }
+  createShorturl(action, longurl) {
+    let _this = this
+    let createUrl = api.qrcode.create
+    action = action || 'long2short'
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${createUrl}access_token=${data.access_token}`
+        let params = {
+          method: 'POST',
+          url: url,
+          json: true,
+          body: {
+            action: action,
+            long_url: longurl
+          }
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Create Qrcode failed')
+        }).catch(err => {
+          reject(err)
+        })
+      })
+    })
+  }
+  ////////////// 智能接口 ////////////////
+  semantic(semanticData) {
+    let _this = this
+    let semanticUrl = api.semanticUrl
+    return new Promise((resolve, reject) => {
+      _this.fetchAccessToken().then(data => {
+        let url = `${semanticUrl}access_token=${data.access_token}`
+        semanticData.appid = data.appID
+        let params = {
+          method: 'POST',
+          url: url,
+          json: true,
+          body: data
+        }
+
+        request(params).then(res => {
+          let _data = res.body
+          if (_data) resolve(_data)
+          else throw new Error('Semantic failed')
         }).catch(err => {
           reject(err)
         })
