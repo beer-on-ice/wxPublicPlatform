@@ -2,13 +2,18 @@
   "dependencies": {
     "axios": "^0.18.0",
     "bluebird": "^3.5.2",
+    "crypto": "^1.0.1",
     "ejs": "^2.6.1",
     "heredoc": "^1.3.1",
     "koa": "^2.5.3",
     "lodash": "^4.17.11",
+    "nodemon": "^1.18.4",
     "raw-body": "^2.3.3",
     "request": "^2.88.0",
     "sha1": "^1.1.1",
     "xml2js": "^0.4.19"
+  },
+  "scripts": {
+    "dev": "nodemon -w app.js -w ./app -w ./wx -w ./wechat --exec node app.js"
   }
 }

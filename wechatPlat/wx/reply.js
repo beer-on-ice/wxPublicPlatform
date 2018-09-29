@@ -8,8 +8,6 @@ const path = require('path')
 setTimeout(() => {
   wechatApi.delMenu().then(function () {
     return wechatApi.createMenu(menu)
-  }).then(msg => {
-    console.log(msg);
   })
 }, 100);
 exports.reply = function* (next) {

@@ -4,6 +4,7 @@
 const path = require('path')
 const util = require('./libs/util')
 const wechat_file = path.resolve(__dirname, './config/wechat.txt')
+const wechat_ticket_file = path.resolve(__dirname, './config/wechat_ticket.txt')
 
 const config = {
   wechat: {
@@ -18,6 +19,15 @@ const config = {
     saveAccessToken(data) {
       data = JSON.stringify(data)
       return util.writeFileAsync(wechat_file, data)
+    },
+    // 读取ticket
+    getTicket() {
+      return util.readFileAsync(wechat_ticket_file)
+    },
+    // 写入ticket
+    saveTicket(data) {
+      data = JSON.stringify(data)
+      return util.writeFileAsync(wechat_ticket_file, data)
     }
   }
 }

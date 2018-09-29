@@ -59,6 +59,9 @@ const api = {
   },
   shorturl: {
     create: prefix + 'shorturl?'
+  },
+  ticket: {
+    get: prefix + 'ticket/getticket?'
   }
 }
 
@@ -68,6 +71,8 @@ module.exports = class Wechat {
     this.appSecret = opts.appSecret
     this.getAccessToken = opts.getAccessToken
     this.saveAccessToken = opts.saveAccessToken
+    this.getTicket = opts.getTicket
+    this.saveTicket = opts.saveTicket
     this.fetchAccessToken()
   }
   // 获取最新access_token
@@ -105,14 +110,14 @@ module.exports = class Wechat {
         return Promise.resolve(this)
       }
     }
-    this.getAccessToken().then(data => {
+    return this.getAccessToken().then(data => {
       try {
         data = JSON.parse(data)
       } catch (error) {
         return _this.updateAccessToken(data)
       }
       if (_this.isValidateAccessToken(data)) {
-        return data
+        return Promise.resolve(data)
       } else {
         return _this.updateAccessToken()
       }
@@ -916,5 +921,51 @@ module.exports = class Wechat {
         })
       })
     })
+  }
+
+  ///////// js_sdk //////////
+  fetchTicket(access_token) {
+    let _this = this
+    return this.getTicket().then(data => {
+      try {
+        data = JSON.parse(data)
+      } catch (error) {
+        return _this.updateTicket(access_token)
+      }
+      if (_this.isValidateTicket(data)) {
+        return Promise.resolve(data)
+      } else {
+        return _this.updateTicket(access_token)
+      }
+    }).then(data => {
+      _this.saveTicket(data)
+      return Promise.resolve(data)
+    })
+  }
+  updateTicket(access_token) {
+    return new Promise(resolve => {
+      axios({
+        method: 'get',
+        url: api.ticket.get,
+        params: {
+          access_token: access_token,
+          type: 'jsapi'
+        }
+      }).then(res => {
+        let data = res.data
+        let now = new Date().getTime()
+        let expires_in = now + (data.expires_in - 20) * 1000
+        data.expires_in = expires_in
+        resolve(data)
+      })
+    })
+  }
+  isValidateTicket(data) {
+    if (!data || !data.ticket || !data.expires_in) return false
+    let ticket = data.ticket
+    let expires_in = data.expires_in
+    let now = (new Date().getTime())
+    if (ticket && now < expires_in) return true
+    else return false
   }
 }
