@@ -2,9 +2,9 @@
  * 1、 填写服务器配置
  */
 const path = require('path')
-const util = require('./libs/util')
-const wechat_file = path.resolve(__dirname, './config/wechat.txt')
-const wechat_ticket_file = path.resolve(__dirname, './config/wechat_ticket.txt')
+const util = require('../libs/util')
+const wechat_file = path.resolve(__dirname, '../config/wechat.txt')
+const wechat_ticket_file = path.resolve(__dirname, '../config/wechat_ticket.txt')
 
 const config = {
   wechat: {
@@ -32,4 +32,7 @@ const config = {
   }
 }
 
-module.exports = config
+exports.getWechat = function () {
+  const wechatApi = new Wechat(config.wechat)
+  return wechatApi
+}

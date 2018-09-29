@@ -1,15 +1,9 @@
 // 回复策略
-const config = require('../config')
-const Wechat = require('../wechat/wechat')
-const menu = require('./menu')
-const wechatApi = new Wechat(config.wechat)
 const path = require('path')
+const wx = require('./wx/index')
+const wechatApi = wx.getWechat()
 
-setTimeout(() => {
-  wechatApi.delMenu().then(function () {
-    return wechatApi.createMenu(menu)
-  })
-}, 100);
+
 exports.reply = function* (next) {
   let message = this.weixin
 
