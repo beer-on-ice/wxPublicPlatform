@@ -7,7 +7,7 @@ const mongoose = require('mongoose')
 const menu = require('./wx/menu')
 const wx = require('./wx/index')
 const game = require('./app/controllers/game')
-// const wechat = require('./app/controllers/wechat')
+const wechat = require('./app/controllers/wechat')
 
 const app = new Koa()
 const router = new Router()
@@ -41,12 +41,13 @@ walk(models_path)
 wechatApi.delMenu().then(() => wechatApi.createMenu(menu))
 
 
-const wechat = require('./wechat/p')
-const reply = require('./wx/reply')
-app.use(wechat(wx.wechatOpts.wechat, reply.reply)) //都要进行验证是否来自微信服务器
+// const wechat = require('./wechat/p')
+// const reply = require('./wx/reply')
+// app.use(wechat(wx.wechatOpts.wechat, reply.reply)) //都要进行验证是否来自微信服务器
 
-// router.get('/wx', wechat.hear)
-// router.get('/post', wechat.hear)
+router.get('/wx', wechat.hear)
+router.post('/wx', wechat.hear)
+// router.use('/wx', wechat.hear)
 router.get('/movie', game.movie)
 
 

@@ -3,6 +3,7 @@ const reply = require('../../wx/reply')
 const wx = require('../../wx/index')
 // bug ---
 exports.hear = async function (ctx, next) {
-  let handles = await wechat(wx.wechatOpts.wechat, reply.reply)
-  // handles(next)
+  ctx.body = '1'
+  let handles = await wechat(ctx, wx.wechatOpts.wechat, reply.reply)
+  await handles(ctx, next)
 }
