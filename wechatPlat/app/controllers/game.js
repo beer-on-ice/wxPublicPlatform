@@ -1,9 +1,7 @@
 const heredoc = require('heredoc')
 const ejs = require('ejs')
 const util = require('./../../libs/util')
-
 const wx = require('../../wx/index')
-const wechatApi = wx.getWechat()
 
 let tpl = heredoc(function () {
   /*
@@ -134,100 +132,13 @@ let tpl = heredoc(function () {
   */
 })
 
-exports.movie = function* (next) {
-  let data = yield wechatApi.fetchAccessToken()
+exports.movie = async function (ctx, next) {
+  const wechatApi = wx.getWechat()
+  let data = await wechatApi.fetchAccessToken()
   let access_token = data.access_token
-  let ticketData = yield wechatApi.fetchTicket(access_token)
+  let ticketData = await wechatApi.fetchTicket(access_token)
   let ticket = ticketData.ticket
-  let url = this.href
+  let url = `http://${ctx.header.host}${ctx.url}`
   let params = util.sign(ticket, url)
-  this.body = ejs.render(tpl, params)
-}
-
-
-app.use(wechat(config.wechat, reply.reply)) //都要进行验证是否来自微信服务器
-
-
-app.listen('3000', () => console.log('Listening: 3000'))
-'use strict'
-
-var mongoose = require('mongoose')
-var User = mongoose.model('User')
-var Comment = mongoose.model('Comment')
-var wx = require('../../wx/index')
-var util = require('../../libs/util')
-var Movie = require('../api/movie')
-var options = require('../../options.json')
-var request = require('request')
-
-exports.guess = function* (next) {
-  var wechatApi = wx.getWechat()
-  var data = yield wechatApi.fetchAccessToken()
-  var access_token = data.access_token
-  var ticketData = yield wechatApi.fetchTicket(access_token)
-  var ticket = ticketData.ticket
-  var url = this.href.replace(':8000', '')
-  var params = util.sign(ticket, url)
-
-  yield this.render('wechat/game', params)
-}
-
-
-exports.jump = function* (next) {
-  var movieId = this.params.id
-  var redirect = encodeURIComponent(options.baseUrl + '/wechat/movie/' + movieId)
-  // var redirect = options.baseUrl + '/wechat/movie/' + movieId
-  var url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + options.appID + '&redirect_uri=' + redirect + '&response_type=code&scope=snsapi_base&state=' + movieId + '#wechat_redirect'
-
-  this.redirect(url)
-}
-
-
-exports.find = function* (next) {
-  var code = this.query.code
-  var openUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + options.appID + '&secret=' + options.appSecret + '&code=' + code + '&grant_type=authorization_code'
-
-  var response = yield request({
-    url: openUrl
-  })
-  var body = JSON.parse(response.body)
-  var openid = body.openid
-  var user = yield User.findOne({
-    openid: openid
-  }).exec()
-
-  if (!user) {
-    user = new User({
-      openid: openid,
-      password: 'imoocimooc',
-      name: Math.random().toString(36).substr(2)
-    })
-
-    user = yield user.save()
-  }
-
-  this.session.user = user
-  this.state.user = user
-
-  var id = this.params.id
-  var wechatApi = wx.getWechat()
-  var data = yield wechatApi.fetchAccessToken()
-  var access_token = data.access_token
-  var ticketData = yield wechatApi.fetchTicket(access_token)
-  var ticket = ticketData.ticket
-  var url = this.href.replace(':8000', '')
-  var params = util.sign(ticket, url)
-  var movie = yield Movie.searchById(id)
-  var comments = yield Comment
-    .find({
-      movie: id
-    })
-    .populate('from', 'name')
-    .populate('reply.from reply.to', 'name')
-    .exec()
-
-  params.movie = movie
-  params.comments = comments
-
-  yield this.render('wechat/movie', params)
+  ctx.body = ejs.render(tpl, params)
 }

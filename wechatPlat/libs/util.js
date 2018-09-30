@@ -18,18 +18,17 @@ const _sign = (noncestr, jsapi_ticket, timestamp, url) => {
   return shasum.digest('hex')
 }
 
-
 exports.sign = (ticket, url) => {
   let noncestr = createNonce()
   let timestamp = createTimestamp()
   let signature = _sign(noncestr, ticket, timestamp, url)
+
   return {
     noncestr,
     timestamp,
     signature
   }
 }
-
 
 // 读取
 exports.readFileAsync = (fpath, encoding) => {

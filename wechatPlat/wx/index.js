@@ -3,6 +3,8 @@
  */
 const path = require('path')
 const util = require('../libs/util')
+const Wechat = require('./../wechat/wechat')
+
 const wechat_file = path.resolve(__dirname, '../config/wechat.txt')
 const wechat_ticket_file = path.resolve(__dirname, '../config/wechat_ticket.txt')
 
@@ -36,3 +38,5 @@ exports.getWechat = function () {
   const wechatApi = new Wechat(config.wechat)
   return wechatApi
 }
+
+exports.wechatOpts = config

@@ -1,6 +1,6 @@
 // 回复策略
 const path = require('path')
-const wx = require('./wx/index')
+const wx = require('./index')
 const wechatApi = wx.getWechat()
 
 
@@ -12,7 +12,14 @@ exports.reply = function* (next) {
       if (message.EventKey) {
         console.log('扫描二维码进来：' + message.EventKey + '  ' + message.ticket);
       }
-      this.body = `哈哈，你订阅了这个号`
+      this.body = `欢迎关注电影大王\n
+      回复 1~18，测试\n
+      回复 首页， 进入电影首页\n
+      回复 电影名字，查询电影信息\n
+      某些功能订阅号无权限，如网页授权\n
+      回复 语音，查询电影信息\n
+      也可以点击 <a href="http://ydiwh3.natappfree.cc/movie">语音查电影</a>
+      `
     } else if (message.Event === 'unsubscribe') {
       console.log('取关');
       this.body = ''

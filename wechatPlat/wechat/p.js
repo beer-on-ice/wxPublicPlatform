@@ -39,10 +39,13 @@ module.exports = function (opts, handler) {
       let message = util.formatMessage(content.xml)
 
       this.weixin = message
+      console.log(this.weixin);
 
       yield handler.call(this, next)
 
       wechat.reply.call(this)
+      console.log(next);
+
     }
   }
 }
