@@ -133,9 +133,11 @@ module.exports = class Wechat {
     let content = this.body
     let message = this.weixin
     let xml = util.tpl(content, message)
+
     this.status = 200
     this.type = 'application/xml'
     this.body = xml
+    console.log(this.body);
   }
   ///////////////  素材   /////////////////////
   uploadMaterial(type, material, permanent) {

@@ -1,5 +1,6 @@
 const Koa = require('koa')
 const Router = require('koa-router')
+const views = require('koa-views')
 const logger = require('koa-logger')
 const fs = require('fs')
 const mongoose = require('mongoose')
@@ -40,17 +41,15 @@ walk(models_path)
 
 wechatApi.delMenu().then(() => wechatApi.createMenu(menu))
 
-
-// const wechat = require('./wechat/p')
-// const reply = require('./wx/reply')
-// app.use(wechat(wx.wechatOpts.wechat, reply.reply)) //都要进行验证是否来自微信服务器
+app.use(views(__dirname + '/app/views', {
+  extension: 'pug'
+}))
 
 router.get('/wx', wechat.hear)
 router.post('/wx', wechat.hear)
-// router.use('/wx', wechat.hear)
 router.get('/movie', game.movie)
 
-
 app.use(logger())
+
 app.use(router.routes()).use(router.allowedMethods())
 app.listen('3000', () => console.log('Listening: 3000'))
