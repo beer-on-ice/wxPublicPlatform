@@ -1,5 +1,7 @@
 // 回复策略
 const Movie = require('../app/api/movie')
+const baseUrl = 'http://kfiwu3.natappfree.cc/movie/'
+
 exports.reply = async function (ctx, next) {
   let message = ctx.weixin
 
@@ -73,9 +75,9 @@ exports.reply = async function (ctx, next) {
       movies.forEach(item => {
         reply.push({
           title: item.title,
-          description: movie.description,
-          picUrl: movie.images.large,
-          url: movie.alt
+          description: item.original_title,
+          picUrl: item.poster,
+          url: baseUrl + item._id
         })
       });
     } else {
@@ -111,8 +113,8 @@ exports.reply = async function (ctx, next) {
           reply.push({
             title: item.title,
             description: item.original_title,
-            picUrl: item.images.large,
-            url: item.alt
+            picUrl: item.poster,
+            url: baseUrl + item._id
           })
         })
 

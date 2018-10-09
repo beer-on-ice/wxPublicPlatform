@@ -1,4 +1,3 @@
-const mongoose = require('mongoose')
 const Promise = require('bluebird')
 const request = Promise.promisify(require('request'))
 const _ = require('lodash')
@@ -60,14 +59,14 @@ exports.searchById = async (id) => await Movie
   .exec()
 
 const updateMovies = async movie => {
-  var options = {
+  let options = {
     url: 'https://api.douban.com/v2/movie/subject/' + movie.doubanId,
     json: true
   }
 
-  var response = await request(options)
+  let response = await request(options)
 
-  var data = JSON.parse(response.body)
+  let data = response.body
 
   _.extend(movie, {
     country: data.countries[0],
@@ -75,16 +74,14 @@ const updateMovies = async movie => {
     summary: data.summary
   })
 
-  console.log(data)
-
-  var genres = movie.genres
+  let genres = movie.genres
 
   if (genres && genres.length > 0) {
-    var cateArray = []
+    let cateArray = []
 
     genres.forEach(genre => {
       cateArray.push(async () => {
-        var cat = await Category.findOne({
+        let cat = await Category.findOne({
           name: genre
         }).exec()
 
@@ -111,59 +108,56 @@ const updateMovies = async movie => {
 }
 
 exports.searchByDouban = async (q) => {
-  var options = {
+  let options = {
     url: 'https://api.douban.com/v2/movie/search?q='
   }
 
   options.url += encodeURIComponent(q)
 
-  var response = await request(options)
+  let response = await request(options)
 
-  var data = JSON.parse(response.body)
-  var subjects = []
-  var movies = []
+  let data = JSON.parse(response.body)
+  let subjects = []
+  let movies = []
 
   if (data && data.subjects) {
     subjects = data.subjects
   }
-  return subjects
 
-  // if (subjects.length > 0) {
-  //   var queryArray = []
+  if (subjects.length > 0) {
+    let queryArray = []
+    subjects.forEach(item => {
+      let t = async () => {
+        let movie = await Movie.findOne({
+          doubanId: item.id
+        })
+        if (movie) {
+          movies.push(movie)
+        } else {
+          let directors = item.directors || []
+          let director = directors[0] || {}
 
-  //   subjects.forEach(item => {
-  //     queryArray.push(async () => {
-  //       var movie = await Movie.findOne({
-  //         doubanId: item.id
-  //       })
+          movie = new Movie({
+            director: director.name || '',
+            title: item.title,
+            doubanId: item.id,
+            poster: item.images.large,
+            year: item.year,
+            genres: item.genres || []
+          })
 
-  //       if (movie) {
-  //         movies.push(movie)
-  //       } else {
-  //         var directors = item.directors || []
-  //         var director = directors[0] || {}
+          movies.push(movie)
+          movie = await movie.save()
+        }
+      }
+      queryArray.push(t())
+    })
 
-  //         movie = new Movie({
-  //           director: director.name || '',
-  //           title: item.title,
-  //           doubanId: item.id,
-  //           poster: item.images.large,
-  //           year: item.year,
-  //           genres: item.genres || []
-  //         })
-
-  //         movie = await movie.save()
-  //         movies.push(movie)
-  //       }
-  //     })
-  //   })
-
-  //   await queryArray
-
-  //   movies.forEach(movie => {
-  //     updateMovies(movie)
-  //   })
-  // }
-
-  // return movies
+    Promise.all(queryArray).then(() => {
+      movies.forEach(movie => {
+        updateMovies(movie)
+      })
+    })
+  }
+  return movies
 }

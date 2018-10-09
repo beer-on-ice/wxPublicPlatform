@@ -137,7 +137,6 @@ module.exports = class Wechat {
     this.status = 200
     this.type = 'application/xml'
     this.body = xml
-    console.log(this.body);
   }
   ///////////////  素材   /////////////////////
   uploadMaterial(type, material, permanent) {
@@ -287,7 +286,6 @@ module.exports = class Wechat {
   countMaterial() {
     let _this = this
     let countUrl = api.permanent.count
-    console.log(countUrl);
     return new Promise((resolve, reject) => {
       _this.fetchAccessToken().then(data => {
         let url = `${countUrl}access_token=${data.access_token}`

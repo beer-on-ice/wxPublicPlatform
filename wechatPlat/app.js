@@ -47,7 +47,8 @@ app.use(views(__dirname + '/app/views', {
 
 router.get('/wx', wechat.hear)
 router.post('/wx', wechat.hear)
-router.get('/movie', game.movie)
+router.get('/movie', game.guess)
+router.get('/movie/:id', game.find)
 
 app.use(logger())
 
