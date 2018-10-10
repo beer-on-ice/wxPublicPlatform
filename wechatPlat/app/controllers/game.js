@@ -25,6 +25,7 @@ exports.find = async function (ctx, next) {
   let params = util.sign(ticket, url)
 
   let movie = await Movie.searchById(id)
+
   params.movie = movie
   ctx.body = await pug.renderFile('app/views/wechat/movie.pug', params)
 }

@@ -1,4 +1,5 @@
 const Promise = require('bluebird')
+const co = require('co')
 const request = Promise.promisify(require('request'))
 const _ = require('lodash')
 

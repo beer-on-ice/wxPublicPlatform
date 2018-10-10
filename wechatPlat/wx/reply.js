@@ -69,9 +69,10 @@ exports.reply = async function (ctx, next) {
     if (!movies || movies.length === 0) {
       movies = await Movie.searchByDouban(voiceTxt)
     }
+
     if (movies || movies.length > 0) {
       reply = []
-      movies = movies.slice(0, 10)
+      movies = movies.slice(0, 3)
       movies.forEach(item => {
         reply.push({
           title: item.title,
